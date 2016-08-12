@@ -1,0 +1,552 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: City Data Exchange Platform
+  description: A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: Swagger API Team
+    email: harish.babu@hitachiconsulting.com
+    url: https://citydataexchange.com
+  license:
+    name: MIT
+    url: http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT
+host: platform.citydataexchange.com
+basePath: /api
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /datasets/_stats:
+    get:
+      tags:
+      - dataset
+      description: |
+        Returns the stats about datasets
+      operationId: getDatasetStats
+      responses:
+        200:
+          description: dataset stats response
+          schema:
+            $ref: '#/definitions/DatasetStats'
+
+  /datasets:
+    get:
+      description: |
+        List of datasets
+      operationId: listDatasets
+      tags:
+      - dataset
+      responses:
+        200:
+          description: datasets array
+          schema: 
+            type: array
+            items:
+              $ref: '#/definitions/Dataset'
+
+  /datasets/{id}:
+    get:
+      description: |
+        Returns a specific dataset with the supplied id.
+      operationId: getDataset
+      tags:
+      - dataset
+      parameters:
+        - name: id
+          in: path
+          description: ID of the dataset to fetch
+          required: true
+          type: string
+      responses:
+        200:
+          description: dataset response
+          schema:
+            $ref: '#/definitions/Dataset'
+
+  /datasets/{id}/audits:
+    get:
+      description: |
+        Returns the audits for datasets
+      operationId: getDatasetAudits
+      tags:
+      - dataset
+      parameters:
+        - name: id
+          in: path
+          description: ID of dataset to fetch
+          required: true
+          type: string
+      responses:
+        200:
+          description: dataset audits response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DatasetAudit'
+
+  /categories:
+    get:
+      operationId: getCategories
+      tags:
+      - category
+      responses:
+        200:
+          description: categories response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DatasetCategory'
+
+    post:
+      operationId: postCatergory
+      tags:
+      - category
+      parameters:
+        - name: X-Content-Language
+          in: header
+          description: language of the content
+          type: string
+      responses:
+        202:
+          description: categories response
+          schema:
+            $ref: '#/definitions/DatasetCategory'
+
+  /categories/{id}:
+    put:
+      operationId: putCatergory
+      tags:
+      - category
+      parameters:
+        - name: X-Content-Language
+          in: header
+          description: language of the content
+          type: string
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: category to update
+      responses:
+        202:
+          description: categories response
+          schema:
+            $ref: '#/definitions/DatasetCategory'
+
+  /orders:
+    get:
+      description: |
+        Returns all orders from the system that the user has access to.
+      operationId: getOrders
+      tags:
+      - order
+      parameters:
+        - name: size
+          in: query
+          description: maximum number of results to return
+          required: false
+          type: number
+          format: int32
+          collectionFormat: csv
+          items:
+            type: string
+        - name: page
+          in: query
+          description: page number
+          required: false
+          type: integer
+          format: int32
+      responses:
+        200:
+          description: order response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Order'
+          headers:
+            X-Total-Count:
+              description: Total number of orders in the server
+              type: integer
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      description: Creates a new order.
+      operationId: newOrder
+      tags:
+      - order
+      parameters:
+        - name: order
+          in: body
+          description: Order to create.
+          required: true
+          schema:
+            $ref: '#/definitions/NewOrder'
+      responses:
+        200:
+          description: pet response
+          schema:
+            $ref: '#/definitions/Order'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /orders/{id}:
+    get:
+      description: Returns a order based on a single id, if the user has access to the order.
+      operationId: find order by id
+      tags:
+      - order
+      parameters:
+        - name: id
+          in: path
+          description: ID of order to fetch
+          required: true
+          type: string
+      responses:
+        200:
+          description: order response
+          schema:
+            $ref: '#/definitions/Order'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /umbraco:
+    get:
+      description: Returns umbraco content list at specified path
+      operationId: umbraco list
+      tags:
+      - umbraco
+      parameters:
+        - name: path
+          in: query
+          description: path of content to fetch
+          required: true
+          type: string
+        - name: search
+          in: query
+          description: text to search
+          required: false
+          type: string
+        - name: from
+          in: query
+          description: first element to return starting at 1
+          required: false
+          type: number
+        - name: size
+          in: query
+          description: max number of elements to return
+          required: false
+          type: number
+      responses:
+        200:
+          description: umbraco collection or object
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UmbracoContent'
+          headers:
+            X-Total-Count:
+              description: Total number of items in the server
+              type: integer
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /umbraco/{id}:
+    get:
+      description: Returns umbraco content item at specified path
+      operationId: umbraco content
+      tags:
+      - umbraco
+      parameters:
+        - name: id
+          in: path
+          description: id of the content to return
+          required: true
+          type: string
+      responses:
+        200:
+          description: umbraco content object
+          schema:
+            $ref: '#/definitions/UmbracoContent'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /users:
+    get:
+        description: Returns umbraco content list at specified path
+        operationId: listUsers
+        tags:
+        - user
+        responses:
+          200:
+            description: user collection or object
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/Account'
+
+definitions:
+  Error:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+
+  SmartCityString:
+    properties:
+      value:
+        type: string
+      locale:
+        type: string
+      isDefault:
+        type: boolean
+
+  DatasetAudit:
+    required:
+      - id
+      - datasetId
+      - message
+      - timestamp
+    properties:
+      id:
+        type: string
+      datasetId:
+        type: string
+      message:
+        type: string
+      timestamp:
+        type: string
+        format: date-time
+
+  Order:
+    allOf:
+      - $ref: '#/definitions/NewOrder'
+    required:
+      - id
+      - items
+      - credit
+      - created
+      - modified
+      - status
+    properties:
+      id:
+        type: string
+      created:
+        type: string
+        format: date-time
+      modified:
+        type: string
+        format: date-time
+      status:
+        type: string
+        enum:
+          - pending
+          - approved
+          - rejected
+
+  NewOrder:
+    required:
+      - payment
+      - items
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/OrderItem'
+      credit:
+        type: integer
+        format: int64
+      payment:
+        $ref: '#/definitions/Payment'
+        
+  OrderItem:
+    properties:
+      datasetId:
+        type: string
+      name:
+        type: array
+        items:
+          $ref: '#/definitions/SmartCityString'
+      price:
+        type: number
+      subscriptionType:
+        type: string
+        enum:
+          - oneTimeDownload
+          - yearly
+          - monthly
+          - weekly
+          - free
+      supplierName:
+        type: string
+      datasetUploadFrequeny:
+        type: string
+        enum:
+          - selectFrequency
+          - oneTime
+          - hourly
+          - daily
+          - weekly
+          - monthly
+          - quarterly
+          - annually
+
+  Payment:
+    allOf:
+      - $ref: '#/definitions/InvoicePayment'
+      - $ref: '#/definitions/PaypalPayment'
+
+  InvoicePayment:
+    required:
+      - type
+      - data
+    properties:
+      type:
+        type: string
+        enum:
+          - invoice
+      data:
+        $ref: '#/definitions/InvoicePaymentData'
+
+  InvoicePaymentData:
+    required:
+      - firstName
+      - lastName
+      - companyName
+      - address
+      - city
+      - country
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      companyName:
+        type: string
+      address:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+
+  PaypalPayment:
+    required: 
+    - type
+    - data
+    properties:
+      type:
+        type: string
+        enum:
+          - paypal
+      data:
+        $ref: '#/definitions/PaypalPaymentData'
+
+  PaypalPaymentData:
+    required:
+      - token
+    properties:
+      token:
+        type: string
+
+  Dataset:
+    required:
+      - id
+      - name
+      - description
+      - frequency
+      - status
+      - supplier
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      rating:
+        type: integer
+      frequency: 
+        type: string
+        enum:
+          - once
+          - hourly
+          - daily
+          - weekly
+          - monthly
+          - yearly
+      status:
+        type: string
+        enum:
+          - published
+      supplier:
+        $ref: '#/definitions/Account'
+
+  DatasetStats:
+    properties:
+      dataSize :
+        type: number
+
+  DatasetCategory:
+    required:
+      - id
+      - name
+      - description
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+
+  UmbracoContent:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+        
+  Account:
+    required:
+      - id
+      - type
+    properties:
+      id:
+        type: string
+      type:
+        type: string
+        enum:
+          - user
+          - company
+        
+  User:
+    allOf:
+      - $ref: '#/definitions/Account'
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+          
+  Company:
+    allOf:
+      - $ref: '#/definitions/Account'
+    properties:
+      name:
+        type: string
