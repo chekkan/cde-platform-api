@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   version: 1.0.0
   title: City Data Exchange Platform
-  description: A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification
+  description: City Data Exchange's platform API documentation
   termsOfService: http://swagger.io/terms/
   contact:
     name: Swagger API Team
@@ -317,6 +317,34 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Account'
+              
+  /subscriptions:
+    get:
+      description: Returns list of subscriptions
+      operationId: listSubscriptions
+      tags:
+      - subscription
+      responses:
+        200:
+          description: subscription collection
+          schema:
+            $ref: '#/definitions/SubscriptionCollection'
+            
+  /subscriptions/{id}:
+    delete:
+      description: Changes subscription to be inactive
+      operationId: deleteSubscription
+      tags:
+      - subscription
+      parameters:
+      - name: id
+        in: path
+        description: ID of the subscription to unsubscribe
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfull without response content
                 
   /transactions:
     get:
@@ -459,6 +487,9 @@ definitions:
         type: number
         
   NewOrderItem:
+    required:
+    - deliveryType
+    - dataset
     properties:
       deliveryType:
         type: string
@@ -485,6 +516,8 @@ definitions:
         $ref: '#/definitions/SupplierOrderItem'
         
   NewDatasetOrderItem:
+    required:
+    - id
     properties:
       id: 
         type: string
@@ -662,6 +695,51 @@ definitions:
         enum:
           - user
           - company
+          
+  SubscriptionCollection:
+    type: array
+    items:
+      $ref: '#/definitions/Subscription'
+  
+  Subscription:
+    required:
+    - id
+    properties:
+      id: 
+        type: string
+      status:
+        type: string
+        enum:
+        - active
+        - inactive
+        - pending
+      dataset:
+        $ref: '#/definitions/Dataset'
+      deliveryType:
+        type: string
+        enum:
+        - oneTime
+        - subscription
+      startDate:
+        type: string
+        format: date-time
+      user:
+        $ref: '#/definitions/User'
+      order:
+        $ref: '#/definitions/Order'
+      consumerApiSubscriptionUrl:
+        type: string
+      consumerSubscriptionKey:
+        type: string
+        
+  User:
+    properties:
+      id:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
 
   TransactionCollection:
     type: array
