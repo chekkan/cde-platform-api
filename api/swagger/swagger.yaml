@@ -459,6 +459,9 @@ definitions:
         type: number
         
   NewOrderItem:
+    required:
+    - deliveryType
+    - dataset
     properties:
       deliveryType:
         type: string
@@ -485,6 +488,8 @@ definitions:
         $ref: '#/definitions/SupplierOrderItem'
         
   NewDatasetOrderItem:
+    required:
+    - id
     properties:
       id: 
         type: string
