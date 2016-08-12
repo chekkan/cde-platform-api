@@ -175,6 +175,7 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+
     post:
       description: Creates a new order.
       operationId: newOrder
@@ -196,10 +197,11 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+
   /orders/{id}:
     get:
       description: Returns a order based on a single id, if the user has access to the order.
-      operationId: find order by id
+      operationId: findOrderById
       tags:
       - order
       parameters:
@@ -217,6 +219,26 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+    put:
+      description: Allows the order status to be updated
+      operationId: updateOrder
+      tags:
+      - order
+      parameters:
+      - name: id
+        in: path
+        description: Id of the order to update
+        required: true
+        type: string
+      - name: order
+        in: body
+        description: status of the order
+        schema: 
+          $ref: '#/definitions/UpdateOrder'
+      responses:
+        202:
+          description: accepted order update
+
   /umbraco:
     get:
       description: Returns umbraco content list at specified path
@@ -259,6 +281,7 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+
   /umbraco/{id}:
     get:
       description: Returns umbraco content item at specified path
@@ -283,17 +306,29 @@ paths:
 
   /users:
     get:
-        description: Returns umbraco content list at specified path
-        operationId: listUsers
-        tags:
-        - user
-        responses:
-          200:
-            description: user collection or object
-            schema:
-              type: array
-              items:
-                $ref: '#/definitions/Account'
+      description: Returns umbraco content list at specified path
+      operationId: listUsers
+      tags:
+      - user
+      responses:
+        200:
+          description: user collection or object
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Account'
+                
+  /transactions:
+    get:
+      description: Returns paged list of transactions
+      operationId: listTransactions
+      tags:
+      - transaction
+      responses:
+        200:
+          description: transaction collection
+          schema:
+            $ref: '#/definitions/TransactionCollection'
 
 definitions:
   Error:
@@ -306,15 +341,6 @@ definitions:
         format: int32
       message:
         type: string
-
-  SmartCityString:
-    properties:
-      value:
-        type: string
-      locale:
-        type: string
-      isDefault:
-        type: boolean
 
   DatasetAudit:
     required:
@@ -335,35 +361,22 @@ definitions:
 
   Order:
     allOf:
-      - $ref: '#/definitions/NewOrder'
+      - $ref: '#/definitions/UpdateOrder'
     required:
       - id
       - items
       - credit
+      - status
+      - payment
+      - consumer
+      - totalVATAmount
+      - totalCommissionAmount
+      - totalAmount
       - created
       - modified
-      - status
     properties:
       id:
         type: string
-      created:
-        type: string
-        format: date-time
-      modified:
-        type: string
-        format: date-time
-      status:
-        type: string
-        enum:
-          - pending
-          - approved
-          - rejected
-
-  NewOrder:
-    required:
-      - payment
-      - items
-    properties:
       items:
         type: array
         items:
@@ -373,38 +386,153 @@ definitions:
         format: int64
       payment:
         $ref: '#/definitions/Payment'
-        
-  OrderItem:
-    properties:
-      datasetId:
+      consumer:
+        $ref: '#/definitions/Consumer'
+      totalVATAmount:
+        type: number
+      totalCommissionAmount:
+        type: number
+      totalAmount:
+        type: number
+      created:
         type: string
-      name:
+        format: date-time
+      modified:
+        type: string
+        format: date-time
+
+  NewOrder:
+    required:
+      - payment
+      - items
+    properties:
+      items:
         type: array
         items:
-          $ref: '#/definitions/SmartCityString'
-      price:
-        type: number
-      subscriptionType:
+          $ref: '#/definitions/NewOrderItem'
+      credit:
+        type: integer
+        format: int64
+      payment:
+        $ref: '#/definitions/Payment'
+        
+  UpdateOrder:
+    required:
+      - status
+    properties:
+      status:
         type: string
         enum:
-          - oneTimeDownload
-          - yearly
-          - monthly
-          - weekly
-          - free
-      supplierName:
-        type: string
-      datasetUploadFrequeny:
+          - pending
+          - approved
+          - rejected
+        
+  OrderItem:
+    required:
+    - deliveryType
+    - dataset
+    - basePrice
+    - vatPercentage
+    - vatAmount
+    - commissionPercentage
+    - commissionAmount
+    - amount
+    properties:
+      deliveryType:
         type: string
         enum:
-          - selectFrequency
           - oneTime
-          - hourly
-          - daily
-          - weekly
-          - monthly
-          - quarterly
-          - annually
+          - subscription
+      dataset:
+          $ref: '#/definitions/DatasetOrderItem'
+      basePrice:
+        type: number
+      vatPercentage:
+        type: number
+      vatAmount:
+        type: number
+      commissionPercentage:
+        type: number
+      commissionAmount:
+        type: number
+      amount:
+        type: number
+        
+  NewOrderItem:
+    properties:
+      deliveryType:
+        type: string
+        enum:
+          - oneTime
+          - subscription
+      dataset:
+        $ref: '#/definitions/NewDatasetOrderItem'
+          
+  DatasetOrderItem:
+    allOf:
+    - $ref: '#/definitions/NewDatasetOrderItem'
+    required:
+    - id
+    - name
+    - description
+    - supplier
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      supplier:
+        $ref: '#/definitions/SupplierOrderItem'
+        
+  NewDatasetOrderItem:
+    properties:
+      id: 
+        type: string
+        
+  SupplierOrderItem:
+    required:
+    - id
+    - name
+    - email
+    - company
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      email:
+        type: string
+      company:
+        $ref: '#/definitions/CompanyOrderItem'
+        
+  Consumer:
+    required:
+    - id
+    - firstName
+    - lastName
+    - email
+    - company
+    properties:
+      id:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      company:
+        $ref: '#/definitions/CompanyOrderItem'
+        
+  CompanyOrderItem:
+    required:
+    - id
+    - name
+    properties:
+      id:
+        type: string
+      name:
+        type: string
 
   Payment:
     allOf:
@@ -534,19 +662,13 @@ definitions:
         enum:
           - user
           - company
-        
-  User:
-    allOf:
-      - $ref: '#/definitions/Account'
+
+  TransactionCollection:
+    type: array
+    items:
+      $ref: '#/definitions/Transaction'
+      
+  Transaction:
     properties:
-      first_name:
-        type: string
-      last_name:
-        type: string
-          
-  Company:
-    allOf:
-      - $ref: '#/definitions/Account'
-    properties:
-      name:
+      id:
         type: string
