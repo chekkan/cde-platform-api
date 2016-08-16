@@ -621,8 +621,11 @@ definitions:
   PaypalPaymentData:
     required:
       - token
+      - payerIdentifier
     properties:
       token:
+        type: string
+      payerIdentifier:
         type: string
 
   Dataset:
